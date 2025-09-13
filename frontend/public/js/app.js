@@ -107,15 +107,26 @@ function setupEventListeners() {
 async function loadVehicles(filters = {}) {
   try {
     const query = new URLSearchParams(filters).toString();
+    console.log('Loading vehicles from:', `${API_BASE}/vehicles?${query}`);
+
     const response = await fetch(`${API_BASE}/vehicles?${query}`);
+
     if (response.ok) {
       const vehicles = await response.json();
+      console.log('Vehicles loaded:', vehicles.length);
       displayVehicles(vehicles);
     } else {
-      console.error('Failed to load vehicles');
+      console.error('Failed to load vehicles:', response.status, response.statusText);
+      showMessage('Error al cargar vehículos', 'error');
     }
   } catch (error) {
-    console.error('Error loading vehicles:', error);
+    console.error('Network error loading vehicles:', error);
+
+    if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      showMessage('Error de conexión. Verifica que el servidor esté ejecutándose.', 'error');
+    } else {
+      showMessage('Error al cargar vehículos', 'error');
+    }
   }
 }
 
@@ -251,6 +262,12 @@ async function handleSellMoto(e) {
     return;
   }
 
+  // Show loading state
+  const submitBtn = document.querySelector('#sell-form button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Publicando...';
+  submitBtn.disabled = true;
+
   const formData = new FormData();
   formData.append('title', `${document.getElementById('moto-brand').value} ${document.getElementById('moto-model').value}`);
   formData.append('brand', document.getElementById('moto-brand').value);
@@ -270,6 +287,9 @@ async function handleSellMoto(e) {
   }
 
   try {
+    console.log('Sending request to:', `${API_BASE}/vehicles`);
+    console.log('Auth token present:', !!authToken);
+
     const response = await fetch(`${API_BASE}/vehicles`, {
       method: 'POST',
       headers: {
@@ -279,7 +299,17 @@ async function handleSellMoto(e) {
       body: formData
     });
 
-    const data = await response.json();
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+
+    let data;
+    try {
+      data = await response.json();
+      console.log('Response data:', data);
+    } catch (parseError) {
+      console.error('Error parsing response:', parseError);
+      data = { message: 'Error parsing server response' };
+    }
 
     if (response.ok) {
       hideModal('sell-modal');
@@ -288,11 +318,21 @@ async function handleSellMoto(e) {
       showMessage('Moto publicada exitosamente', 'success');
       loadVehicles(); // Refresh vehicle list
     } else {
-      showMessage(data.message || 'Error al publicar la moto', 'error');
+      console.error('Server error:', data);
+      showMessage(data.message || `Error del servidor (${response.status})`, 'error');
     }
   } catch (error) {
-    console.error('Sell moto error:', error);
-    showMessage('Error de conexión', 'error');
+    console.error('Network error:', error);
+
+    if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      showMessage('Error de conexión. Verifica que el servidor esté ejecutándose.', 'error');
+    } else {
+      showMessage('Error de conexión: ' + error.message, 'error');
+    }
+  } finally {
+    // Reset button state
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
   }
 }
 

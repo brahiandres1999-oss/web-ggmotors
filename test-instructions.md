@@ -86,3 +86,15 @@ Set `NODE_ENV=development` in .env for detailed logging
 
 ### Browser Console
 Always check browser console for JavaScript errors and API responses
+
+### Network Diagnostics
+1. **Health Check**: Visit `http://localhost:5000/health` to verify server is running
+2. **CORS Issues**: Check if frontend is served from a local server (not file:// protocol)
+3. **Connection Reset**: May indicate MongoDB connection issues or server crashes
+4. **500 Errors**: Check server logs for detailed error information
+
+### New Debugging Features
+- **Enhanced Error Messages**: More specific error messages instead of generic "Something went wrong!"
+- **Loading States**: Visual feedback during form submissions
+- **Network Error Handling**: Better handling of connection failures
+- **Form Layout Stability**: Fixed submit button positioning with image uploads
