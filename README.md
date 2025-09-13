@@ -15,7 +15,18 @@ GG Motors is a scalable web application for buying and selling vehicles of all t
 - **Responsive Design**: Mobile-friendly interface that works on all devices
 - **File Upload**: Image upload support for vehicle listings with validation
 - **Transaction Management**: Complete transaction tracking and order history
+- **Custom Color Palette**: Elegant beige and brown theme for enhanced user experience
 - **Modular Architecture**: Clean, scalable code structure for future enhancements
+
+## Color Palette
+
+The application uses a custom color palette for a cohesive and elegant design:
+
+- **Primary Background**: `#ffffff` (Pure White)
+- **Secondary Background**: `#fffaeb` (Light Beige)
+- **Accent Color**: `#f0f0d8` (Pale Green)
+- **Neutral Borders**: `#cfcfcf` (Medium Gray)
+- **Primary Text**: `#967c52` (Dark Brown)
 
 ## Technology Stack
 
@@ -49,6 +60,20 @@ gg-motors/
 ├── database-schema.md   # Database schema documentation
 └── README.md           # This file
 ```
+
+## Recent Updates & Fixes
+
+### Version Improvements
+- **Backend Error Handling**: Enhanced error logging and debugging for vehicle creation
+- **Form Layout Fixes**: Resolved submit button visibility issues in image upload forms
+- **Color Palette Integration**: Complete redesign with custom beige and brown theme
+- **File Upload Optimization**: Improved image preview and form layout stability
+
+### Bug Fixes
+- Fixed "Something went wrong!" error in motorcycle listing creation
+- Resolved submit button disappearing when adding images to forms
+- Improved form validation and user feedback
+- Enhanced responsive design for mobile devices
 
 ## Setup Instructions
 

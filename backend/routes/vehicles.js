@@ -66,6 +66,10 @@ router.get('/:id', async (req, res) => {
 // POST new vehicle
 router.post('/', auth, upload.array('images', 10), async (req, res) => {
   try {
+    console.log('Received vehicle data:', req.body);
+    console.log('Authenticated user:', req.user);
+    console.log('Uploaded files:', req.files);
+
     const vehicleData = { ...req.body };
 
     // Handle uploaded images
@@ -76,11 +80,15 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
     // Ensure sellerId matches authenticated user
     vehicleData.sellerId = req.user.userId;
 
+    console.log('Final vehicle data:', vehicleData);
+
     const vehicle = new Vehicle(vehicleData);
     const newVehicle = await vehicle.save();
+    console.log('Vehicle saved successfully:', newVehicle);
     res.status(201).json(newVehicle);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error('Error saving vehicle:', err);
+    res.status(400).json({ message: err.message || 'Error creating vehicle' });
   }
 });
 
