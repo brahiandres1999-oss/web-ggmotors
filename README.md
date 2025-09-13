@@ -78,6 +78,9 @@ gg-motors/
 - **Submit Button Disappearing**: Implemented sticky positioning and fixed form layout
 - **Connection Reset Errors**: Enhanced CORS configuration and error handling
 - **Image Placeholder Loading**: Added fallback for missing hero background image
+- **Vehicle Image Display**: Fixed image URL construction to include full backend server URL
+- **ERR_FILE_NOT_FOUND for Images**: Corrected static file serving path resolution
+- **Hero Background Image**: Replaced external URL with local gradient background
 
 ### Bug Fixes
 - Fixed "Something went wrong!" error in motorcycle listing creation

@@ -60,6 +60,19 @@
 
 **Expected Result**: Consistent color scheme throughout the application
 
+### 4. Image Display Issues
+**Issue**: ERR_FILE_NOT_FOUND and ERR_NAME_NOT_RESOLVED for vehicle images
+**Fix**: Fixed image URL construction and hero background
+
+**Test Steps**:
+1. Check that hero section has gradient background (no external image errors)
+2. Create a test vehicle with images using the "Sell Your Moto" form
+3. Verify images display correctly in vehicle listings
+4. Check browser console for image loading errors
+5. Test image URLs are constructed as `http://localhost:5000/uploads/filename.jpg`
+
+**Expected Result**: Images load without errors, hero background displays properly
+
 ## Full Application Testing
 
 ### Authentication Flow

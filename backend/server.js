@@ -17,6 +17,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static files for uploaded images
 app.use('/uploads', express.static('uploads'));
 
+// Debug middleware for static files
+app.use('/uploads', (req, res, next) => {
+  console.log(`Static file request: ${req.path}`);
+  next();
+});
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/gg-motors', {
   useNewUrlParser: true,

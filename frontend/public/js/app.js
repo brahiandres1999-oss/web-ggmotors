@@ -1,6 +1,7 @@
 // GG Motors Frontend JavaScript
 
 const API_BASE = 'http://localhost:5000/api';
+const SERVER_BASE = 'http://localhost:5000';
 
 // Global variables
 let currentUser = null;
@@ -135,18 +136,30 @@ function displayVehicles(vehicles) {
   const container = document.getElementById('vehicle-list');
   if (!container) return;
 
-  container.innerHTML = vehicles.map(vehicle => `
+  container.innerHTML = vehicles.map(vehicle => {
+    // Construct full image URL
+    let imageUrl = '';
+    if (vehicle.images && vehicle.images.length > 0) {
+      // If image path starts with /uploads, prepend server base URL
+      if (vehicle.images[0].startsWith('/uploads/')) {
+        imageUrl = `${SERVER_BASE}${vehicle.images[0]}`;
+      } else {
+        imageUrl = vehicle.images[0];
+      }
+    }
+
+    return `
     <div class="vehicle-card">
-      ${vehicle.images && vehicle.images.length > 0 ? `<img src="${vehicle.images[0]}" alt="${vehicle.title}" class="vehicle-image">` : ''}
+      ${imageUrl ? `<img src="${imageUrl}" alt="${vehicle.title}" class="vehicle-image" onerror="this.style.display='none'">` : ''}
       <h3>${vehicle.title}</h3>
       <p>Precio: $${vehicle.price.toLocaleString()}</p>
       <p>${vehicle.description || 'Sin descripción'}</p>
       <div class="vehicle-actions">
         <button onclick="viewVehicleDetails('${vehicle._id}')">Ver Detalles</button>
-        <button onclick="addToCart('${vehicle._id}', '${vehicle.title}', ${vehicle.price})" class="btn-cart">Agregar al Carrito</button>
+        <button onclick="addToCart('${vehicle._id}', '${vehicle.title.replace(/'/g, "\\'")}', ${vehicle.price})" class="btn-cart">Agregar al Carrito</button>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 // View vehicle details (placeholder)
