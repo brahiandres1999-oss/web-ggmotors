@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GG Motors - Compra y Venta de Vehículos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>GG Motors</h1>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Buscar vehículos..." id="search-input">
+                <button id="search-btn">Buscar</button>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home">Inicio</a></li>
+                <li class="dropdown">
+                    <a href="#vehicles">Vehículos</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#cars">Autos</a></li>
+                        <li><a href="#motorcycles">Motos</a></li>
+                        <li><a href="#trucks">Camiones</a></li>
+                    </ul>
+                </li>
+                <li><a href="#sell" id="sell-link">Vender</a></li>
+                <li><a href="#financing">Financiamiento</a></li>
+                <li><a href="#about">Nosotros</a></li>
+                <li><a href="#contact">Contacto</a></li>
+                <li class="cart-info" id="cart-info">
+                    <a href="#" id="cart-link">🛒 Carrito (<span id="cart-count">0</span>)</a>
+                </li>
+                <li class="user-info" id="user-info">
+                    <span id="user-name"></span>
+                    <button id="logout-btn">Cerrar Sesión</button>
+                </li>
+                <li class="guest-info" id="guest-info">
+                    <a href="#" id="login-link">Iniciar Sesión</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <h2>Bienvenido a GG Motors</h2>
+            <p>La plataforma líder para comprar y vender vehículos de todo tipo.</p>
+            <a href="#vehicles" class="btn">Explorar Vehículos</a>
+        </section>
+
+        <section id="vehicles" class="vehicles-section">
+            <h2>Vehículos Disponibles</h2>
+            <div class="filters">
+                <select id="category-filter">
+                    <option value="">Todas las categorías</option>
+                    <option value="cars">Autos</option>
+                    <option value="motorcycles">Motos</option>
+                    <option value="trucks">Camiones</option>
+                </select>
+                <input type="number" id="min-price" placeholder="Precio mínimo">
+                <input type="number" id="max-price" placeholder="Precio máximo">
+                <input type="text" id="location-filter" placeholder="Ubicación">
+                <button id="apply-filters">Aplicar Filtros</button>
+            </div>
+            <div class="vehicle-list" id="vehicle-list">
+                <!-- Vehicle listings will be loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="login-close">&times;</span>
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email:</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña:</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn">Iniciar Sesión</button>
+            </form>
+            <p>¿No tienes cuenta? <a href="#" id="show-register">Regístrate</a></p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="register-close">&times;</span>
+            <h2>Registro</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-name">Nombre:</label>
+                    <input type="text" id="register-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email:</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Contraseña:</label>
+                    <input type="password" id="register-password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="register-phone">Teléfono:</label>
+                    <input type="tel" id="register-phone">
+                </div>
+                <button type="submit" class="btn">Registrarse</button>
+            </form>
+            <p>¿Ya tienes cuenta? <a href="#" id="show-login">Inicia Sesión</a></p>
+        </div>
+    </div>
+
+    <!-- Sell Moto Modal -->
+    <div id="sell-modal" class="modal">
+        <div class="modal-content large">
+            <span class="close" id="sell-close">&times;</span>
+            <h2>Vender Mi Moto</h2>
+            <form id="sell-form" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="moto-brand">Marca:</label>
+                        <input type="text" id="moto-brand" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="moto-model">Modelo:</label>
+                        <input type="text" id="moto-model" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="moto-year">Año:</label>
+                        <input type="number" id="moto-year" min="1900" max="2025" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="moto-mileage">Kilometraje:</label>
+                        <input type="number" id="moto-mileage" min="0" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="moto-price">Precio:</label>
+                        <input type="number" id="moto-price" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="moto-location">Ubicación:</label>
+                        <input type="text" id="moto-location" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="moto-description">Descripción:</label>
+                    <textarea id="moto-description" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="moto-images">Imágenes:</label>
+                    <input type="file" id="moto-images" multiple accept="image/*">
+                    <div id="image-preview"></div>
+                </div>
+                <button type="submit" class="btn">Publicar Moto</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Shopping Cart Modal -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content large">
+            <span class="close" id="cart-close">&times;</span>
+            <h2>Mi Carrito de Compras</h2>
+            <div id="cart-items">
+                <!-- Cart items will be loaded here -->
+            </div>
+            <div id="cart-total">
+                <strong>Total: $<span id="total-amount">0</span></strong>
+            </div>
+            <div class="cart-actions">
+                <button id="clear-cart" class="btn secondary">Vaciar Carrito</button>
+                <button id="checkout-btn" class="btn">Proceder al Pago</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 GG Motors. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
