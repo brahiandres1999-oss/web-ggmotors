@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GG Motors - Image Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        img {
+            max-width: 200px;
+            max-height: 150px;
+            border: 1px solid #ddd;
+            margin: 5px;
+        }
+        .image-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖼️ GG Motors - Image Debug Test</h1>
+    <p>This page helps debug image display issues in the GG Motors application.</p>
+
+    <div class="test-section">
+        <h2>1. Server Connectivity Test</h2>
+        <button onclick="testServerConnection()">Test Server Connection</button>
+        <div id="server-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Uploads Directory Test</h2>
+        <button onclick="testUploadsDirectory()">Test Uploads Directory</button>
+        <div id="uploads-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Static File Serving Test</h2>
+        <button onclick="testStaticFileServing()">Test Static File Serving</button>
+        <div id="static-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Vehicles API Test</h2>
+        <button onclick="testVehiclesAPI()">Test Vehicles API</button>
+        <div id="vehicles-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Image URL Construction Test</h2>
+        <button onclick="testImageURLConstruction()">Test Image URL Construction</button>
+        <div id="url-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Manual Image Test</h2>
+        <p>Enter an image filename to test:</p>
+        <input type="text" id="manual-image-filename" placeholder="e.g., images-1234567890-0.jpg" style="width: 300px; padding: 8px;">
+        <button onclick="testManualImage()">Test Manual Image</button>
+        <div id="manual-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>7. Console Logs</h2>
+        <p>Open browser console (F12) to see detailed logs from the main application.</p>
+        <button onclick="clearConsole()">Clear Console</button>
+        <div id="console-logs" style="background: #f8f8f8; padding: 10px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const SERVER_BASE = 'http://localhost:5000';
+
+        function createResultDiv(message, type = 'info') {
+            return `<div class="test-result ${type}">${message}</div>`;
+        }
+
+        async function testServerConnection() {
+            const resultDiv = document.getElementById('server-test-result');
+            resultDiv.innerHTML = '<div class="test-result info">Testing server connection...</div>';
+
+            try {
+                const response = await fetch(`${SERVER_BASE}/`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = createResultDiv(`✅ Server connected successfully: ${data.message}`, 'success');
+                } else {
+                    resultDiv.innerHTML = createResultDiv(`❌ Server error: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = createResultDiv(`❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUploadsDirectory() {
+            const resultDiv = document.getElementById('uploads-test-result');
+            resultDiv.innerHTML = '<div class="test-result info">Testing uploads directory...</div>';
+
+            try {
+                const response = await fetch(`${SERVER_BASE}/test-uploads`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    let html = `<div class="test-result success">✅ Uploads directory accessible</div>`;
+                    html += `<div class="test-result info">Files found: ${data.fileCount}</div>`;
+
+                    if (data.filesWithDetails && data.filesWithDetails.length > 0) {
+                        html += '<div class="image-grid">';
+                        data.filesWithDetails.forEach(file => {
+                            if (file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                                html += `<img src="${SERVER_BASE}${file.url}" alt="${file.name}" title="${file.name} (${file.size} bytes)">`;
+                            }
+                        });
+                        html += '</div>';
+                    }
+
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = createResultDiv(`❌ Uploads directory error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = createResultDiv(`❌ Uploads test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testStaticFileServing() {
+            const resultDiv = document.getElementById('static-test-result');
+            resultDiv.innerHTML = '<div class="test-result info">Testing static file serving...</div>';
+
+            try {
+                const response = await fetch(`${SERVER_BASE}/uploads/test.txt`);
+
+                if (response.ok) {
+                    const text = await response.text();
+                    resultDiv.innerHTML = createResultDiv(`✅ Static file served: "${text.trim()}"`, 'success');
+                } else if (response.status === 404) {
+                    resultDiv.innerHTML = createResultDiv(`⚠️ Test file not found (this is normal if no test file exists)`, 'warning');
+                } else {
+                    resultDiv.innerHTML = createResultDiv(`❌ Static file error: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = createResultDiv(`❌ Static file test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testVehiclesAPI() {
+            const resultDiv = document.getElementById('vehicles-test-result');
+            resultDiv.innerHTML = '<div class="test-result info">Testing vehicles API...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/vehicles`);
+                const vehicles = await response.json();
+
+                if (response.ok) {
+                    let html = createResultDiv(`✅ Vehicles API working. Found ${vehicles.length} vehicles.`, 'success');
+
+                    if (vehicles.length > 0) {
+                        const firstVehicle = vehicles[0];
+                        html += createResultDiv(`First vehicle: ${firstVehicle.title}`, 'info');
+                        html += createResultDiv(`Has images: ${firstVehicle.images && firstVehicle.images.length > 0 ? 'Yes' : 'No'}`, 'info');
+
+                        if (firstVehicle.images && firstVehicle.images.length > 0) {
+                            html += createResultDiv(`Image paths: ${firstVehicle.images.join(', ')}`, 'info');
+                        }
+                    }
+
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = createResultDiv(`❌ Vehicles API error: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = createResultDiv(`❌ Vehicles API test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testImageURLConstruction() {
+            const resultDiv = document.getElementById('url-test-result');
+            resultDiv.innerHTML = '<div class="test-result info">Testing image URL construction...</div>';
+
+            // Test different scenarios
+            const testCases = [
+                { input: '/uploads/test.jpg', expected: `${SERVER_BASE}/uploads/test.jpg` },
+                { input: 'uploads/test.jpg', expected: `${SERVER_BASE}/uploads/test.jpg` },
+                { input: 'http://example.com/test.jpg', expected: 'http://example.com/test.jpg' }
+            ];
+
+            let html = '';
+
+            testCases.forEach((testCase, index) => {
+                let constructedUrl = '';
+                if (testCase.input.startsWith('/uploads/')) {
+                    constructedUrl = `${SERVER_BASE}${testCase.input}`;
+                } else if (testCase.input.startsWith('uploads/')) {
+                    constructedUrl = `${SERVER_BASE}/${testCase.input}`;
+                } else {
+                    constructedUrl = testCase.input;
+                }
+
+                const isCorrect = constructedUrl === testCase.expected;
+                html += createResultDiv(
+                    `Test ${index + 1}: "${testCase.input}" → "${constructedUrl}" ${isCorrect ? '✅' : '❌'}`,
+                    isCorrect ? 'success' : 'error'
+                );
+            });
+
+            resultDiv.innerHTML = html;
+        }
+
+        function testManualImage() {
+            const filename = document.getElementById('manual-image-filename').value.trim();
+            const resultDiv = document.getElementById('manual-test-result');
+
+            if (!filename) {
+                resultDiv.innerHTML = createResultDiv('❌ Please enter a filename', 'error');
+                return;
+            }
+
+            const imageUrl = `${SERVER_BASE}/uploads/${filename}`;
+            resultDiv.innerHTML = `
+                <div class="test-result info">Testing image: ${imageUrl}</div>
+                <img src="${imageUrl}" alt="Test image"
+                     onload="document.getElementById('manual-test-result').innerHTML += '<div class=\'test-result success\'>✅ Image loaded successfully</div>'"
+                     onerror="document.getElementById('manual-test-result').innerHTML += '<div class=\'test-result error\'>❌ Image failed to load</div>'">
+            `;
+        }
+
+        function clearConsole() {
+            console.clear();
+            document.getElementById('console-logs').innerHTML = '<div class="test-result info">Console cleared</div>';
+        }
+
+        // Auto-run basic tests on page load
+        window.addEventListener('load', () => {
+            console.log('🖼️ GG Motors Image Debug Test loaded');
+            console.log('API_BASE:', API_BASE);
+            console.log('SERVER_BASE:', SERVER_BASE);
+        });
+    </script>
+</body>
+</html>

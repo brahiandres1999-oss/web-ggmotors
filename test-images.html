@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Image Loading - GG Motors</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .image-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        img {
+            max-width: 200px;
+            max-height: 150px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #fff3cd; color: #856404; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🖼️ GG Motors - Image Loading Test</h1>
+    <p>This page tests if images are loading correctly from the backend server.</p>
+
+    <div class="test-section">
+        <h2>1. Server Status Check</h2>
+        <button onclick="testServerConnection()">Test Server Connection</button>
+        <div id="server-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Direct Image Loading Test</h2>
+        <p>Testing images that were failing to load:</p>
+        <div class="image-container">
+            <div class="image-item">
+                <h4>Image 1: PNG file</h4>
+                <img src="http://localhost:5000/uploads/images-1757792250520-556892420.png"
+                     alt="Test PNG"
+                     onload="updateStatus('img1', 'success', 'Image loaded successfully')"
+                     onerror="updateStatus('img1', 'error', 'Failed to load image')">
+                <div id="img1" class="status loading">Loading...</div>
+            </div>
+
+            <div class="image-item">
+                <h4>Image 2: PNG file</h4>
+                <img src="http://localhost:5000/uploads/images-1757793039026-528102556.png"
+                     alt="Test PNG 2"
+                     onload="updateStatus('img2', 'success', 'Image loaded successfully')"
+                     onerror="updateStatus('img2', 'error', 'Failed to load image')">
+                <div id="img2" class="status loading">Loading...</div>
+            </div>
+
+            <div class="image-item">
+                <h4>Image 3: WebP file</h4>
+                <img src="http://localhost:5000/uploads/images-1757794594498-144294069.webp"
+                     alt="Test WebP"
+                     onload="updateStatus('img3', 'success', 'Image loaded successfully')"
+                     onerror="updateStatus('img3', 'error', 'Failed to load image')">
+                <div id="img3" class="status loading">Loading...</div>
+            </div>
+
+            <div class="image-item">
+                <h4>Test File: TXT</h4>
+                <p>Testing text file serving:</p>
+                <a href="http://localhost:5000/uploads/test.txt" target="_blank">Open test.txt</a>
+                <div id="txt1" class="status">Click link to test</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. API Test</h2>
+        <button onclick="testVehiclesAPI()">Test Vehicles API</button>
+        <div id="api-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Debug Information</h2>
+        <p>Open browser Developer Tools (F12) and check:</p>
+        <ul>
+            <li>Console tab: Look for static file request logs</li>
+            <li>Network tab: Check if image requests are successful (200 status)</li>
+            <li>Check for CORS errors in console</li>
+        </ul>
+        <button onclick="openDevTools()">Open Dev Tools Guide</button>
+    </div>
+
+    <script>
+        function updateStatus(elementId, statusClass, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${statusClass}`;
+            element.textContent = message;
+        }
+
+        async function testServerConnection() {
+            const statusDiv = document.getElementById('server-status');
+            statusDiv.innerHTML = '<div class="status loading">Testing connection...</div>';
+
+            try {
+                const response = await fetch('http://localhost:5000/');
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusDiv.innerHTML = `<div class="status success">✅ Server connected: ${data.message}</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ Server error: ${response.status}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Connection failed: ${error.message}</div>`;
+                statusDiv.innerHTML += '<br><small>Make sure the backend server is running on port 5000</small>';
+            }
+        }
+
+        async function testVehiclesAPI() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.innerHTML = '<div class="status loading">Testing API...</div>';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/vehicles');
+                const vehicles = await response.json();
+
+                if (response.ok) {
+                    statusDiv.innerHTML = `<div class="status success">✅ API working: Found ${vehicles.length} vehicles</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ API error: ${response.status}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ API test failed: ${error.message}</div>`;
+            }
+        }
+
+        function openDevTools() {
+            alert('To open Developer Tools:\n\n1. Press F12 on your keyboard\n2. Or right-click on the page and select "Inspect"\n3. Go to Console tab to see debug messages\n4. Go to Network tab to see HTTP requests\n\nLook for:\n- Static file request logs\n- HTTP status codes (should be 200)\n- Any CORS errors');
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            console.log('🖼️ Image loading test page loaded');
+            console.log('Testing image URLs:');
+            console.log('- http://localhost:5000/uploads/images-1757792250520-556892420.png');
+            console.log('- http://localhost:5000/uploads/images-1757793039026-528102556.png');
+            console.log('- http://localhost:5000/uploads/images-1757794594498-144294069.webp');
+
+            // Test server connection after a short delay
+            setTimeout(testServerConnection, 1000);
+        });
+    </script>
+</body>
+</html>

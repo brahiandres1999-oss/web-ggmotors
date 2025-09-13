@@ -8,8 +8,7 @@ const { auth } = require('../middleware/auth');
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '../../uploads');
-    cb(null, uploadPath);
+    cb(null, path.join(__dirname, '../../uploads'));
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -47,8 +46,19 @@ router.get('/', async (req, res) => {
     }
 
     const vehicles = await Vehicle.find(query).populate('sellerId', 'name email');
+    console.log('=== VEHICLES RETRIEVED ===');
+    console.log('Number of vehicles:', vehicles.length);
+    if (vehicles.length > 0) {
+      console.log('First vehicle:', {
+        id: vehicles[0]._id,
+        title: vehicles[0].title,
+        images: vehicles[0].images,
+        hasImages: vehicles[0].images && vehicles[0].images.length > 0
+      });
+    }
     res.json(vehicles);
   } catch (err) {
+    console.error('Error retrieving vehicles:', err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -88,16 +98,22 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
     // Handle uploaded images
     if (req.files && req.files.length > 0) {
       vehicleData.images = req.files.map(file => `/uploads/${file.filename}`);
-      console.log('Image paths:', vehicleData.images);
+      console.log('Uploaded files:', req.files.map(f => ({ originalname: f.originalname, filename: f.filename })));
+      console.log('Image paths stored:', vehicleData.images);
+    } else {
+      console.log('No files uploaded');
+      vehicleData.images = [];
     }
 
     // Ensure sellerId matches authenticated user
     if (!req.user || !req.user.userId) {
-      console.error('No authenticated user found');
+      console.error('No authenticated user found in JWT token');
+      console.error('JWT payload:', req.user);
       return res.status(401).json({ message: 'Usuario no autenticado' });
     }
 
     vehicleData.sellerId = req.user.userId;
+    console.log('Setting sellerId from JWT:', req.user.userId);
     console.log('Final vehicle data:', vehicleData);
 
     // Validate data before saving

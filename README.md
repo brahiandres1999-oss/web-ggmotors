@@ -81,6 +81,9 @@ gg-motors/
 - **Vehicle Image Display**: Fixed image URL construction to include full backend server URL
 - **ERR_FILE_NOT_FOUND for Images**: Corrected static file serving path resolution
 - **Hero Background Image**: Replaced external URL with local gradient background
+- **Static File Serving**: Added debugging middleware for upload requests
+- **Multer Configuration**: Fixed file upload destination path
+- **Image URL Construction**: Automatic detection and construction of full URLs
 
 ### Bug Fixes
 - Fixed "Something went wrong!" error in motorcycle listing creation
@@ -97,6 +100,26 @@ A comprehensive debug page is available at `debug.html` to test server connectiv
 - **Authentication Tests**: Register and login test users
 - **Vehicle Creation Tests**: Create test vehicles without complex forms
 - **Real-time Debugging**: See detailed responses and error messages
+
+### Image Debug Test
+A specialized debug page at `debug-image-test.html` for troubleshooting image display issues:
+
+- **Server Connectivity Test**: Verify backend server is responding
+- **Uploads Directory Test**: Check if uploads directory exists and list files
+- **Static File Serving Test**: Test if static files are being served correctly
+- **Vehicles API Test**: Verify vehicle data retrieval with image information
+- **Image URL Construction Test**: Test URL building logic
+- **Manual Image Test**: Test specific image files
+- **Console Logging**: Detailed logging for debugging image loading process
+
+### Static File Test
+A simple test page at `test-images.html` for direct image loading verification:
+
+- **Direct Image Loading**: Test the exact URLs that were failing
+- **Visual Feedback**: See images load with success/error indicators
+- **Server Status Check**: Verify backend connectivity
+- **API Testing**: Test vehicle data retrieval
+- **Developer Tools Guide**: Instructions for debugging with browser dev tools
 
 ### Testing Steps
 1. Start the backend server: `cd backend && npm run dev`

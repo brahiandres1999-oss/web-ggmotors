@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -8,19 +9,79 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'null'],
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:5000', 'http://127.0.0.1:5000', 'null'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files for uploaded images
-app.use('/uploads', express.static('uploads'));
+const uploadsPath = path.join(__dirname, '..', 'uploads');
+console.log(`=== SERVER STARTUP ===`);
+console.log(`Static files will be served from: ${uploadsPath}`);
+console.log(`Uploads directory exists:`, require('fs').existsSync(uploadsPath));
 
-// Debug middleware for static files
-app.use('/uploads', (req, res, next) => {
-  console.log(`Static file request: ${req.path}`);
-  next();
+// List files in uploads directory at startup
+if (require('fs').existsSync(uploadsPath)) {
+  const files = require('fs').readdirSync(uploadsPath);
+  console.log(`Files in uploads directory: ${files.length}`);
+  files.forEach(file => console.log(`  - ${file}`));
+}
+
+app.use('/uploads', express.static(uploadsPath, {
+  setHeaders: (res, filePath) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Cache-Control', 'public, max-age=31536000');
+    console.log(`=== SERVING STATIC FILE ===`);
+    console.log(`File: ${filePath}`);
+    console.log(`URL: ${res.req.originalUrl}`);
+  }
+}));
+
+// Debug middleware for static files (AFTER static middleware - only runs if static doesn't handle)
+app.use('/uploads', (req, res) => {
+  console.log(`=== STATIC FILE DEBUG (FALLTHROUGH) ===`);
+  console.log(`Path: ${req.path}`);
+  console.log(`Full URL: ${req.protocol}://${req.get('host')}${req.originalUrl}`);
+  console.log(`Method: ${req.method}`);
+
+  // Check if file exists
+  const fs = require('fs');
+  const filePath = path.join(__dirname, '..', 'uploads', req.path);
+
+  console.log(`Checking file: ${filePath}`);
+  console.log(`File exists:`, fs.existsSync(filePath));
+
+  if (fs.existsSync(filePath)) {
+    console.log(`File exists but static middleware didn't serve it!`);
+    const stats = fs.statSync(filePath);
+    console.log(`File size: ${stats.size} bytes`);
+    console.log(`File modified: ${stats.mtime}`);
+
+    // Try to serve the file manually as fallback
+    console.log(`Attempting manual file serve...`);
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error(`Manual file serve failed:`, err);
+        res.status(500).json({
+          error: 'File exists but cannot be served',
+          path: req.path,
+          fullPath: filePath,
+          serveError: err.message
+        });
+      } else {
+        console.log(`Manual file serve successful`);
+      }
+    });
+  } else {
+    console.log(`File NOT found at: ${filePath}`);
+    res.status(404).json({
+      error: 'File not found',
+      path: req.path,
+      fullPath: filePath,
+      fileExists: false
+    });
+  }
 });
 
 // Connect to MongoDB
@@ -59,6 +120,48 @@ app.get('/test', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
+});
+
+// Test endpoint for uploads directory
+app.get('/test-uploads', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+
+  try {
+    const uploadsDir = path.join(__dirname, '..', 'uploads');
+
+    if (!fs.existsSync(uploadsDir)) {
+      return res.status(404).json({
+        message: 'Uploads directory does not exist',
+        uploadsPath: uploadsDir
+      });
+    }
+
+    const files = fs.readdirSync(uploadsDir);
+
+    res.json({
+      message: 'Uploads directory accessible',
+      uploadsPath: uploadsDir,
+      files: files,
+      fileCount: files.length,
+      filesWithDetails: files.map(filename => {
+        const filePath = path.join(uploadsDir, filename);
+        const stats = fs.statSync(filePath);
+        return {
+          name: filename,
+          size: stats.size,
+          modified: stats.mtime,
+          url: `/uploads/${filename}`
+        };
+      })
+    });
+  } catch (error) {
+    console.error('Error accessing uploads directory:', error);
+    res.status(500).json({
+      message: 'Error accessing uploads directory',
+      error: error.message
+    });
+  }
 });
 
 // Import routes

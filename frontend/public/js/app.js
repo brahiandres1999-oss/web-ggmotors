@@ -136,21 +136,37 @@ function displayVehicles(vehicles) {
   const container = document.getElementById('vehicle-list');
   if (!container) return;
 
+  console.log('Displaying vehicles:', vehicles.length);
+  console.log('First vehicle data:', vehicles[0]);
+
   container.innerHTML = vehicles.map(vehicle => {
     // Construct full image URL
     let imageUrl = '';
+    let imageHtml = '';
+
     if (vehicle.images && vehicle.images.length > 0) {
+      console.log('Vehicle images:', vehicle.images);
+
       // If image path starts with /uploads, prepend server base URL
       if (vehicle.images[0].startsWith('/uploads/')) {
         imageUrl = `${SERVER_BASE}${vehicle.images[0]}`;
       } else {
         imageUrl = vehicle.images[0];
       }
+
+      console.log('Constructed image URL:', imageUrl);
+
+      imageHtml = `<img src="${imageUrl}" alt="${vehicle.title}" class="vehicle-image"
+                   onerror="console.error('Image failed to load:', '${imageUrl}'); this.style.display='none'"
+                   onload="console.log('Image loaded successfully:', '${imageUrl}')">`;
+    } else {
+      console.log('No images found for vehicle:', vehicle.title);
+      imageHtml = '<div class="no-image-placeholder">Sin imagen</div>';
     }
 
     return `
     <div class="vehicle-card">
-      ${imageUrl ? `<img src="${imageUrl}" alt="${vehicle.title}" class="vehicle-image" onerror="this.style.display='none'">` : ''}
+      ${imageHtml}
       <h3>${vehicle.title}</h3>
       <p>Precio: $${vehicle.price.toLocaleString()}</p>
       <p>${vehicle.description || 'Sin descripción'}</p>
@@ -291,7 +307,7 @@ async function handleSellMoto(e) {
   formData.append('location', document.getElementById('moto-location').value);
   formData.append('description', document.getElementById('moto-description').value);
   formData.append('category', 'motorcycles');
-  formData.append('sellerId', currentUser.id);
+  // Note: sellerId will be set from JWT token in backend, not from form data
 
   // Handle images
   const imageFiles = document.getElementById('moto-images').files;

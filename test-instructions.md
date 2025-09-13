@@ -66,12 +66,20 @@
 
 **Test Steps**:
 1. Check that hero section has gradient background (no external image errors)
-2. Create a test vehicle with images using the "Sell Your Moto" form
-3. Verify images display correctly in vehicle listings
-4. Check browser console for image loading errors
-5. Test image URLs are constructed as `http://localhost:5000/uploads/filename.jpg`
+2. Test uploads directory: Visit `http://localhost:5000/test-uploads`
+3. Test static file serving: Visit `http://localhost:5000/uploads/test.txt`
+4. Create a test vehicle with images using the "Sell Your Moto" form
+5. Check browser console for detailed logging:
+   - "Displaying vehicles: X"
+   - "First vehicle data: {...}"
+   - "Vehicle images: [...]"
+   - "Constructed image URL: http://localhost:5000/uploads/filename.jpg"
+   - "Image loaded successfully" or "Image failed to load"
+6. Verify images display correctly in vehicle listings
+7. Check server logs for static file requests and file existence
+8. If images don't show, check for "Sin imagen" placeholder
 
-**Expected Result**: Images load without errors, hero background displays properly
+**Expected Result**: Images load without errors, hero background displays properly, static files are served correctly, detailed console logging shows the image loading process
 
 ## Full Application Testing
 

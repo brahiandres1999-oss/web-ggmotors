@@ -225,6 +225,21 @@ footer {
     object-fit: cover;
     border-radius: 4px;
     margin-bottom: 15px;
+    display: block;
+}
+
+.no-image-placeholder {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #f0f0d8 0%, #cfcfcf 100%);
+    border-radius: 4px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #967c52;
+    font-weight: bold;
+    border: 2px dashed #cfcfcf;
 }
 
 .vehicle-card h3 {
