@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GG Motors Debug Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>GG Motors Debug Page</h1>
+
+    <div class="test-section">
+        <h2>Server Connection Tests</h2>
+        <button onclick="testRoot()">Test Root Endpoint</button>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <button onclick="testVehicles()">Test Vehicles Endpoint</button>
+        <div id="connection-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Authentication Tests</h2>
+        <div>
+            <input type="email" id="test-email" placeholder="Email" value="test@example.com">
+            <input type="password" id="test-password" placeholder="Password" value="password123">
+            <button onclick="testRegister()">Register Test User</button>
+            <button onclick="testLogin()">Login Test User</button>
+        </div>
+        <div id="auth-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Vehicle Creation Test (Simple)</h2>
+        <div>
+            <input type="text" id="vehicle-title" placeholder="Title" value="Test Motorcycle">
+            <input type="text" id="vehicle-brand" placeholder="Brand" value="Honda">
+            <input type="text" id="vehicle-model" placeholder="Model" value="CBR">
+            <input type="number" id="vehicle-price" placeholder="Price" value="5000">
+            <button onclick="testCreateVehicle()">Create Test Vehicle</button>
+        </div>
+        <div id="vehicle-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Info</h2>
+        <div id="debug-info"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let authToken = null;
+
+        function updateResults(elementId, content, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = content;
+            element.className = isSuccess ? 'success' : 'error';
+        }
+
+        async function testRoot() {
+            try {
+                const response = await fetch('http://localhost:5000/');
+                const data = await response.json();
+                updateResults('connection-results',
+                    `<h3>Root Endpoint: ${response.status}</h3><pre>${JSON.stringify(data, null, 2)}</pre>`,
+                    response.ok);
+            } catch (error) {
+                updateResults('connection-results',
+                    `<h3>Root Endpoint Error</h3><pre>${error.message}</pre>`,
+                    false);
+            }
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch('http://localhost:5000/health');
+                const data = await response.json();
+                updateResults('connection-results',
+                    `<h3>Health Endpoint: ${response.status}</h3><pre>${JSON.stringify(data, null, 2)}</pre>`,
+                    response.ok);
+            } catch (error) {
+                updateResults('connection-results',
+                    `<h3>Health Endpoint Error</h3><pre>${error.message}</pre>`,
+                    false);
+            }
+        }
+
+        async function testVehicles() {
+            try {
+                const response = await fetch(`${API_BASE}/vehicles`);
+                const data = await response.json();
+                updateResults('connection-results',
+                    `<h3>Vehicles Endpoint: ${response.status}</h3><pre>${JSON.stringify(data, null, 2)}</pre>`,
+                    response.ok);
+            } catch (error) {
+                updateResults('connection-results',
+                    `<h3>Vehicles Endpoint Error</h3><pre>${error.message}</pre>`,
+                    false);
+            }
+        }
+
+        async function testRegister() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/users/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'Test User', email, password })
+                });
+                const data = await response.json();
+                updateResults('auth-results',
+                    `<h3>Register: ${response.status}</h3><pre>${JSON.stringify(data, null, 2)}</pre>`,
+                    response.ok);
+            } catch (error) {
+                updateResults('auth-results',
+                    `<h3>Register Error</h3><pre>${error.message}</pre>`,
+                    false);
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/users/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.token) {
+                    authToken = data.token;
+                    document.getElementById('debug-info').innerHTML = `Auth Token: ${authToken.substring(0, 50)}...`;
+                }
+
+                updateResults('auth-results',
+                    `<h3>Login: ${response.status}</h3><pre>${JSON.stringify(data, null, 2)}</pre>`,
+                    response.ok);
+            } catch (error) {
+                updateResults('auth-results',
+                    `<h3>Login Error</h3><pre>${error.message}</pre>`,
+                    false);
+            }
+        }
+
+        async function testCreateVehicle() {
+            if (!authToken) {
+                updateResults('vehicle-results',
+                    '<h3>Error: Must login first</h3>',
+                    false);
+                return;
+            }
+
+            const title = document.getElementById('vehicle-title').value;
+            const brand = document.getElementById('vehicle-brand').value;
+            const model = document.getElementById('vehicle-model').value;
+            const price = document.getElementById('vehicle-price').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/vehicles`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title,
+                        brand,
+                        model,
+                        price: parseInt(price),
+                        category: 'motorcycles',
+                        description: 'Test vehicle from debug page'
+                    })
+                });
+                const data = await response.json();
+                updateResults('vehicle-results',
+                    `<h3>Create Vehicle: ${response.status}</h3><pre>${JSON.stringify(data, null, 2)}</pre>`,
+                    response.ok);
+            } catch (error) {
+                updateResults('vehicle-results',
+                    `<h3>Create Vehicle Error</h3><pre>${error.message}</pre>`,
+                    false);
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            document.getElementById('debug-info').innerHTML = `
+                <p>API Base: ${API_BASE}</p>
+                <p>Timestamp: ${new Date().toISOString()}</p>
+                <p>Ready to test server connection...</p>
+            `;
+        });
+    </script>
+</body>
+</html>

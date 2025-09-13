@@ -8,7 +8,8 @@ const { auth } = require('../middleware/auth');
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    const uploadPath = path.join(__dirname, '../../uploads');
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -66,29 +67,80 @@ router.get('/:id', async (req, res) => {
 // POST new vehicle
 router.post('/', auth, upload.array('images', 10), async (req, res) => {
   try {
+    console.log('=== VEHICLE CREATION REQUEST ===');
     console.log('Received vehicle data:', req.body);
     console.log('Authenticated user:', req.user);
-    console.log('Uploaded files:', req.files);
+    console.log('Uploaded files:', req.files ? req.files.length : 0);
+
+    // Validate required fields
+    const requiredFields = ['title', 'brand', 'model', 'price'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      return res.status(400).json({
+        message: `Campos requeridos faltantes: ${missingFields.join(', ')}`
+      });
+    }
 
     const vehicleData = { ...req.body };
 
     // Handle uploaded images
     if (req.files && req.files.length > 0) {
       vehicleData.images = req.files.map(file => `/uploads/${file.filename}`);
+      console.log('Image paths:', vehicleData.images);
     }
 
     // Ensure sellerId matches authenticated user
-    vehicleData.sellerId = req.user.userId;
+    if (!req.user || !req.user.userId) {
+      console.error('No authenticated user found');
+      return res.status(401).json({ message: 'Usuario no autenticado' });
+    }
 
+    vehicleData.sellerId = req.user.userId;
     console.log('Final vehicle data:', vehicleData);
 
+    // Validate data before saving
     const vehicle = new Vehicle(vehicleData);
+    const validationError = vehicle.validateSync();
+
+    if (validationError) {
+      console.error('Validation error:', validationError);
+      return res.status(400).json({
+        message: 'Error de validación',
+        errors: Object.values(validationError.errors).map(err => err.message)
+      });
+    }
+
     const newVehicle = await vehicle.save();
-    console.log('Vehicle saved successfully:', newVehicle);
+    console.log('Vehicle saved successfully:', newVehicle._id);
     res.status(201).json(newVehicle);
+
   } catch (err) {
-    console.error('Error saving vehicle:', err);
-    res.status(400).json({ message: err.message || 'Error creating vehicle' });
+    console.error('=== VEHICLE CREATION ERROR ===');
+    console.error('Error type:', err.constructor.name);
+    console.error('Error message:', err.message);
+    console.error('Error stack:', err.stack);
+
+    // Handle specific error types
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({
+        message: 'Error de validación de datos',
+        errors: Object.values(err.errors).map(e => e.message)
+      });
+    }
+
+    if (err.name === 'CastError') {
+      return res.status(400).json({ message: 'Formato de datos inválido' });
+    }
+
+    if (err.code === 11000) {
+      return res.status(400).json({ message: 'Datos duplicados' });
+    }
+
+    res.status(500).json({
+      message: process.env.NODE_ENV === 'development' ? err.message : 'Error interno del servidor'
+    });
   }
 });
 

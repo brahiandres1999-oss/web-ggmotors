@@ -8,11 +8,31 @@
 
 **Test Steps**:
 1. Start the backend server: `cd backend && npm run dev`
-2. Open browser console (F12) to see detailed error logs
-3. Try to publish a motorcycle with and without authentication
-4. Check console for detailed error messages instead of generic "Something went wrong!"
+2. Test basic endpoints first:
+   - Visit `http://localhost:5000/` - Should return API status
+   - Visit `http://localhost:5000/health` - Should return health status
+   - Visit `http://localhost:5000/test` - Should return test response
+3. Open browser console (F12) to see detailed error logs
+4. Try to publish a motorcycle with and without authentication
+5. Check console for detailed error messages instead of generic "Something went wrong!"
 
 **Expected Result**: Detailed error messages in console, proper error handling
+
+### 2. Server Connection Issues
+**Issue**: ERR_CONNECTION_RESET, ERR_NAME_NOT_RESOLVED
+**Fix**: Improved CORS configuration and error handling
+
+**Test Steps**:
+1. Ensure MongoDB is running on port 27017
+2. Start backend server with `npm run dev`
+3. Check server logs for "MongoDB connected" message
+4. Test endpoints with curl or browser:
+   ```bash
+   curl http://localhost:5000/health
+   curl http://localhost:5000/test
+   ```
+
+**Expected Result**: Server responds with JSON data, no connection errors
 
 ### 2. Submit Button Visibility Fix
 **Issue**: Submit button disappears when adding images

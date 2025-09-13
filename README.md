@@ -68,12 +68,39 @@ gg-motors/
 - **Form Layout Fixes**: Resolved submit button visibility issues in image upload forms
 - **Color Palette Integration**: Complete redesign with custom beige and brown theme
 - **File Upload Optimization**: Improved image preview and form layout stability
+- **Connection Error Fixes**: Resolved ERR_CONNECTION_RESET and ERR_NAME_NOT_RESOLVED issues
+- **CORS Configuration**: Improved cross-origin request handling
+- **Debug Tools**: Added comprehensive debugging page and enhanced error messages
+
+### Specific Bug Fixes
+- **500 Internal Server Error on POST /api/vehicles**: Fixed multer file upload path and JWT token validation
+- **"Something went wrong!" Error**: Replaced with detailed, specific error messages
+- **Submit Button Disappearing**: Implemented sticky positioning and fixed form layout
+- **Connection Reset Errors**: Enhanced CORS configuration and error handling
+- **Image Placeholder Loading**: Added fallback for missing hero background image
 
 ### Bug Fixes
 - Fixed "Something went wrong!" error in motorcycle listing creation
 - Resolved submit button disappearing when adding images to forms
 - Improved form validation and user feedback
 - Enhanced responsive design for mobile devices
+
+## Debug Tools
+
+### Debug Page
+A comprehensive debug page is available at `debug.html` to test server connectivity and basic functionality:
+
+- **Server Connection Tests**: Test root, health, and API endpoints
+- **Authentication Tests**: Register and login test users
+- **Vehicle Creation Tests**: Create test vehicles without complex forms
+- **Real-time Debugging**: See detailed responses and error messages
+
+### Testing Steps
+1. Start the backend server: `cd backend && npm run dev`
+2. Open `debug.html` in your browser
+3. Test each section systematically
+4. Check browser console for detailed logs
+5. Use the results to identify specific issues
 
 ## Setup Instructions
 
